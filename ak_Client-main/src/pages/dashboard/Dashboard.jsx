@@ -1,22 +1,14 @@
 // src/pages/dashboard/Dashboard.jsx
-import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import DashboardLayout from '../../layouts/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
 
-// Dashboard Pages Components - Using lazy loading with fallbacks
-const Home = lazy(() => import('../../components/dashboard/Home'))
-const Calendar = lazy(() => import('../../components/dashboard/Calender'))
-const Students = lazy(() => import('../../components/dashboard/Students'))
-const Faculty = lazy(() => import('../../components/dashboard/Faculty'))
-const CampusNews = lazy(() => import('../../components/engage/CampusNews'))
-const Events = lazy(() => import('../../components/engage/Events'))
-const Polls = lazy(() => import('../../components/engage/Polls'))
-const CampusGroups = lazy(() => import('../../components/engage/CampusGroups'))
-const Jobs = lazy(() => import('../../components/engage/Jobs'))
-const Tickets = lazy(() => import('../../components/servicedesk/Tickets'))
-const FAQ = lazy(() => import('../../components/servicedesk/FAQS'))
-const CampusShop = lazy(() => import('../../components/marketplace/CampusShop'))
+// Import components directly
+import Homepage from '../../components/dashboard/Homepage'
+import Calendar from '../../components/dashboard/Calender'
+import Students from '../../components/dashboard/Students'
+import Faculty from '../../components/dashboard/Faculty'
 
 // Loading Component
 const LoadingSpinner = () => (
@@ -69,7 +61,7 @@ class DashboardErrorBoundary extends React.Component {
 
 // Main Dashboard Component
 const Dashboard = () => {
-  const { user, isLoading } = useAuth() // Add isLoading
+  const { user, isLoading } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [stats, setStats] = useState({
@@ -83,7 +75,6 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Simulate API call delay
         await new Promise(resolve => setTimeout(resolve, 500))
         
         const mockStats = {
@@ -104,7 +95,7 @@ const Dashboard = () => {
   // Redirect to homepage if root dashboard path
   useEffect(() => {
     if (location.pathname === '/dashboard' || location.pathname === '/dashboard/') {
-      navigate('homepage', { replace: true })
+      navigate('/dashboard/homepage', { replace: true })
     }
   }, [location.pathname, navigate])
 
@@ -114,7 +105,7 @@ const Dashboard = () => {
     return {
       id: user.id,
       email: user.email,
-      full_name: user.full_name,
+      name: user.name,
       role: user.role,
       university_name: user.university_name,
       campus_name: user.campus_name,
@@ -126,51 +117,28 @@ const Dashboard = () => {
 
   // Show loading state while checking authentication
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading dashboard...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
-  // This should not happen due to ProtectedRoute, but added for safety
+  // If no user, return loading (ProtectedRoute should handle redirect)
   if (!user) {
-    return null // ProtectedRoute will handle redirect
+    return <LoadingSpinner />
   }
 
   return (
     <DashboardLayout userData={userData}>
       <DashboardErrorBoundary>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
-            {/* Dashboard Routes - Use relative paths without /dashboard prefix */}
-            <Route path="homepage" element={<Home stats={stats} userData={userData} />} />
-            <Route path="calender" element={<Calendar />} />
-            <Route path="student" element={<Students />} />
-            <Route path="facultity" element={<Faculty />} />
-            
-            {/* Engage Routes */}
-            <Route path="campusNews" element={<CampusNews />} />
-            <Route path="event" element={<Events />} />
-            <Route path="polls" element={<Polls />} />
-            <Route path="community" element={<CampusGroups />} />
-            <Route path="jobDetails" element={<Jobs />} />
-            
-            {/* Service Desk Routes */}
-            <Route path="Tickets" element={<Tickets />} />
-            <Route path="faq" element={<FAQ />} />
-            
-            {/* Marketplace Routes */}
-            <Route path="marketplaceDetails" element={<CampusShop />} />
-            
-            {/* Default redirect - empty path redirects to homepage */}
-            <Route path="" element={<Home stats={stats} userData={userData} />} />
-            <Route path="*" element={<Home stats={stats} userData={userData} />} />
-          </Routes>
-        </Suspense>
+        <Routes>
+          {/* Dashboard Routes */}
+          <Route path="homepage" element={<Homepage stats={stats} userData={userData} />} />
+          <Route path="calendar" element={<Calendar />} />
+          <Route path="students" element={<Students />} />
+          <Route path="faculty" element={<Faculty />} />
+          
+          {/* Default redirect */}
+          <Route path="" element={<Homepage stats={stats} userData={userData} />} />
+          <Route path="*" element={<Homepage stats={stats} userData={userData} />} />
+        </Routes>
       </DashboardErrorBoundary>
     </DashboardLayout>
   )

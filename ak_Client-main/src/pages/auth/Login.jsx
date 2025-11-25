@@ -1,10 +1,13 @@
+// src/pages/auth/Login.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -12,7 +15,6 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  // Direct API URL instead of using process.env
   const API_BASE_URL = "https://api.unicircle.io/";
 
   const showMessage = (type, text) => {
@@ -43,16 +45,22 @@ export default function Login() {
           },
         }
       );
+console.log(response);
 
       if (response.data.error_code === 200) {
-        localStorage.setItem("Token", response.data.data[0].jwt_token);
-        localStorage.setItem("Uni_name", response.data.data[0].university_name);
-        localStorage.setItem("Camp_name", response.data.data[0].campus_name);
-
-        showMessage('success', "Login successful! Redirecting...");
-        setTimeout(() => {
-          navigate("/homepage"); // Corrected to navigate to homepage
-        }, 1000);
+        const userData = response.data.data[0];
+        
+        // Use AuthContext login instead of direct localStorage
+        const loginResult = await login(true, userData, userData.jwt_token);
+        
+        if (loginResult.success) {
+          showMessage('success', "Login successful! Redirecting...");
+          setTimeout(() => {
+            navigate("/dashboard/homepage");
+          }, 1000);
+        } else {
+          showMessage('error', loginResult.error || "Login failed");
+        }
       } else if (response.data.error_code === 404 || response.data.error_code === 406) {
         showMessage('error', "Invalid email or password");
       } else {
@@ -112,130 +120,135 @@ export default function Login() {
         </div>
       )}
       
-      {/* Left Section - Brand Area */}
-      <div className="w-[544px] h-full bg-[#F9F9F9] shadow-[2px_2px_2px_rgba(0,0,0,0.1)] relative">
-        {/* Logo */}
-        <div className="absolute left-[44px] top-[181px]">
-          <img
-            src="dist/img/uniLogo.png"
-            alt="UniCircle Logo"
-            className="h-[38px]"
-          />
-        </div>
-
-        {/* Login Form Container */}
-        <div className="absolute left-[99px] top-[195px] w-[346px]">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-[20px] font-semibold text-black font-inter mb-1">
-              Sign in
-            </h1>
-            <p className="text-[15px] font-medium text-[#262D33] font-inter leading-[18px]">
-              We make it easy for you to stay connected with students anytime & anywhere.
-            </p>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-10">
-            <div className="w-full h-[5px] bg-[#BEF5C3] rounded-[10px]">
-              <div className="w-[29px] h-[5px] bg-[#00BA13] rounded-[10px] ml-auto"></div>
-            </div>
-          </div>
-
-          {/* Form Fields */}
-          <div className="space-y-4">
-            {/* Email Field */}
-            <div className="relative">
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                <Mail className="w-5 h-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="admin email/phone number"
-                className="w-full h-[50px] bg-[#F9F9F9] border border-[#4779F0] rounded-[5px] pl-10 pr-4 text-[14px] font-medium text-[#6E7781] font-inter focus:outline-none focus:ring-1 focus:ring-[#4779F0]"
-                disabled={isLoading}
+      {/* Single Container with 40% Login and 60% Image */}
+      <div className="flex w-full h-full">
+        
+        {/* Left Section - Login Form (40%) */}
+        <div className="w-[40%] h-full bg-[#F9F9F9] flex items-center justify-center">
+          <div className="w-full max-w-[400px] px-8">
+            {/* Logo */}
+            <div className="mb-12">
+              <img
+                src="/src/assets/img/uniLogo.png"
+                alt="UniCircle Logo"
+                className="h-[38px]"
               />
             </div>
 
-            {/* Password Field */}
-            <div className="relative">
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                <Lock className="w-5 h-5 text-gray-400" />
-              </div>
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="password"
-                className="w-full h-[50px] bg-[#F9F9F9] border border-[#4779F0] rounded-[5px] pl-10 pr-12 text-[14px] font-medium text-[#6E7781] font-inter focus:outline-none focus:ring-1 focus:ring-[#4779F0]"
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                disabled={isLoading}
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
+            {/* Header */}
+            <div className="mb-6">
+              <h1 className="text-[20px] font-semibold text-black font-inter mb-1">
+                Sign in
+              </h1>
+              <p className="text-[15px] font-medium text-[#262D33] font-inter leading-[18px]">
+                We make it easy for you to stay connected with students anytime & anywhere.
+              </p>
             </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
+            {/* Progress Bar */}
+            <div className="mb-10">
+              <div className="w-full h-[5px] bg-[#BEF5C3] rounded-[10px]">
+                <div className="w-[29px] h-[5px] bg-[#00BA13] rounded-[10px] ml-auto"></div>
+              </div>
+            </div>
+
+            {/* Form Fields */}
+            <div className="space-y-4">
+              {/* Email Field */}
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                  <Mail className="w-5 h-5 text-gray-400" />
+                </div>
                 <input
-                  type="checkbox"
-                  id="rememberMe"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-[25px] h-[25px] bg-[#F9F9F9] border-[1.5px] border-[#4779F0] rounded-[3px] focus:ring-0 focus:ring-offset-0"
+                  type="text"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="admin email/phone number"
+                  className="w-full h-[50px] bg-[#F9F9F9] border border-[#4779F0] rounded-[5px] pl-10 pr-4 text-[14px] font-medium text-[#6E7781] font-inter focus:outline-none focus:ring-1 focus:ring-[#4779F0]"
                   disabled={isLoading}
                 />
-                <label
-                  htmlFor="rememberMe"
-                  className="ml-2 text-[12px] font-medium text-black font-inter leading-[15px]"
-                >
-                  remember me
-                </label>
               </div>
-              <a
-                href="/forgotpassword"
-                className="text-[12px] font-medium text-black font-inter leading-[15px] hover:text-blue-600 transition-colors"
-              >
-                Forgot Password?
-              </a>
-            </div>
 
-            {/* Login Button */}
-            <button
-              onClick={handleLogin}
-              disabled={isLoading}
-              className="w-full h-[50px] bg-[#1F3977] border-2 border-[#1F3977] rounded-[5px] text-white text-[14px] font-semibold font-inter leading-[17px] hover:bg-[#152a5f] focus:outline-none focus:ring-2 focus:ring-[#1F3977] focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Signing in...
+              {/* Password Field */}
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                  <Lock className="w-5 h-5 text-gray-400" />
                 </div>
-              ) : (
-                "Log in"
-              )}
-            </button>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="password"
+                  className="w-full h-[50px] bg-[#F9F9F9] border border-[#4779F0] rounded-[5px] pl-10 pr-12 text-[14px] font-medium text-[#6E7781] font-inter focus:outline-none focus:ring-1 focus:ring-[#4779F0]"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  disabled={isLoading}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-[25px] h-[25px] bg-[#F9F9F9] border-[1.5px] border-[#4779F0] rounded-[3px] focus:ring-0 focus:ring-offset-0"
+                    disabled={isLoading}
+                  />
+                  <label
+                    htmlFor="rememberMe"
+                    className="ml-2 text-[12px] font-medium text-black font-inter leading-[15px]"
+                  >
+                    remember me
+                  </label>
+                </div>
+                <a
+                  href="/forgotpassword"
+                  className="text-[12px] font-medium text-black font-inter leading-[15px] hover:text-blue-600 transition-colors"
+                >
+                  Forgot Password?
+                </a>
+              </div>
+
+              {/* Login Button */}
+              <button
+                onClick={handleLogin}
+                disabled={isLoading}
+                className="w-full h-[50px] bg-[#1F3977] border-2 border-[#1F3977] rounded-[5px] text-white text-[14px] font-semibold font-inter leading-[17px] hover:bg-[#152a5f] focus:outline-none focus:ring-2 focus:ring-[#1F3977] focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Signing in...
+                  </div>
+                ) : (
+                  "Log in"
+                )}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Right Section - Background Image */}
-      <div className="flex-1 bg-[#F9F9F9] relative">
-        <img
-          src="dist/img/admin_login_img.png"
-          alt="University Campus"
-          className="w-full h-full object-cover"
-        />
+        {/* Right Section - Background Image (60%) */}
+        <div className="w-[60%] h-full bg-[#F9F9F9] flex items-center justify-center p-8">
+          <div className="w-full h-full flex items-center justify-center">
+            <img
+              src="/src/assets/img/admin_login_img.png"
+              alt="University Campus"
+              className="max-w-[80%] max-h-[80%] object-contain"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

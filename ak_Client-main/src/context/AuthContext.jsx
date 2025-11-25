@@ -1,3 +1,4 @@
+// src/context/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
@@ -27,29 +28,21 @@ export const AuthProvider = ({ children }) => {
       try {
         const storedToken = localStorage.getItem('Token');
         const storedUser = {
-          id: localStorage.getItem('User_id'),
-          email: localStorage.getItem('User_email'),
-          name: localStorage.getItem('User_name'),
-          mobile: localStorage.getItem('User_mobile'),
+          id: localStorage.getItem('User_id') || localStorage.getItem('user_id'),
+          email: localStorage.getItem('User_email') || localStorage.getItem('email'),
+          name: localStorage.getItem('User_name') || localStorage.getItem('name'),
+          mobile: localStorage.getItem('User_mobile') || localStorage.getItem('mobile'),
           role: localStorage.getItem('User_role') || 'admin',
-          university_name: localStorage.getItem('Uni_name'),
-          campus_name: localStorage.getItem('Camp_name'),
-          campus_id: localStorage.getItem('Campus_id'),
-          profile: localStorage.getItem('User_profile'),
+          university_name: localStorage.getItem('Uni_name') || localStorage.getItem('university_name'),
+          campus_name: localStorage.getItem('Camp_name') || localStorage.getItem('campus_name'),
+          campus_id: localStorage.getItem('Campus_id') || localStorage.getItem('campus_id'),
+          profile: localStorage.getItem('User_profile') || localStorage.getItem('profile'),
         };
 
-        if (storedToken && storedUser.id) {
-          // Verify token validity with backend (optional)
-          try {
-            // You can add token verification API call here if available
-            // For now, we'll assume token is valid if it exists
-            setToken(storedToken);
-            setUser(storedUser);
-            setIsAuthenticated(true);
-          } catch (error) {
-            console.error('Token verification failed:', error);
-            clearAuthData();
-          }
+        if (storedToken && (storedUser.id || storedUser.email)) {
+          setToken(storedToken);
+          setUser(storedUser);
+          setIsAuthenticated(true);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -98,7 +91,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('User_email', userData.email || '');
       localStorage.setItem('User_name', userData.name || '');
       localStorage.setItem('User_mobile', userData.mobile || '');
-      localStorage.setItem('User_role', 'admin'); // Default role as per your component
+      localStorage.setItem('User_role', 'admin');
       localStorage.setItem('Uni_name', userData.university_name || '');
       localStorage.setItem('Camp_name', userData.campus_name || '');
       localStorage.setItem('Campus_id', userData.campus_id || '');
@@ -110,7 +103,7 @@ export const AuthProvider = ({ children }) => {
         email: userData.email,
         name: userData.name,
         mobile: userData.mobile,
-        role: 'admin', // Default role
+        role: 'admin',
         university_name: userData.university_name,
         campus_name: userData.campus_name,
         campus_id: userData.campus_id,
@@ -142,7 +135,6 @@ export const AuthProvider = ({ children }) => {
             Authorization: `Bearer ${token}`,
           },
         }).catch(error => {
-          // Continue with logout even if API call fails
           console.warn('Logout API call failed, continuing with local logout:', error);
         });
       }
@@ -150,7 +142,6 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', error);
     } finally {
       clearAuthData();
-      // Redirect to login page
       window.location.href = '/login';
     }
   };
@@ -166,7 +157,6 @@ export const AuthProvider = ({ children }) => {
     Object.keys(updatedUserData).forEach(key => {
       const value = updatedUserData[key];
       if (value !== undefined && value !== null) {
-        // Map context keys to localStorage keys
         const storageKey = getStorageKey(key);
         localStorage.setItem(storageKey, value.toString());
       }
@@ -217,7 +207,6 @@ export const AuthProvider = ({ children }) => {
   // Refresh token (if needed)
   const refreshToken = async () => {
     try {
-      // Implement token refresh logic here if your API supports it
       const response = await axios.post('https://api.unicircle.io/refresh-token', {
         token: token
       });
@@ -230,21 +219,20 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Token refresh failed:', error);
-      logout(); // Logout if token refresh fails
+      logout();
       throw error;
     }
   };
 
-  // Check if token is about to expire (basic implementation)
+  // Check if token is about to expire
   const isTokenExpiringSoon = () => {
     if (!token) return true;
     
     try {
-      // Basic JWT token expiration check
       const payload = JSON.parse(atob(token.split('.')[1]));
-      const exp = payload.exp * 1000; // Convert to milliseconds
+      const exp = payload.exp * 1000;
       const now = Date.now();
-      const bufferTime = 5 * 60 * 1000; // 5 minutes buffer
+      const bufferTime = 5 * 60 * 1000;
       
       return (exp - now) < bufferTime;
     } catch (error) {
