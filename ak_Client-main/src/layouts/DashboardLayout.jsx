@@ -109,12 +109,6 @@ const LogOut = ({ className = "w-6 h-6" }) => (
   </svg>
 )
 
-const Search = ({ className = "w-6 h-6" }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-  </svg>
-)
-
 const ChevronDown = ({ className = "w-6 h-6" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -131,7 +125,7 @@ const getNavigationGroups = () => [
   {
     title: 'Dashboard',
     items: [
-      { name: 'Home', href: '/dashboard/homepage', icon: Home, index: 1 },
+      { name: 'Home', href: '/dashboard/homepage', icon: Home, index: 1, active: true },
       { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar, index: 2 },
       { name: 'Students', href: '/dashboard/student', icon: Users, index: 3 },
       { name: 'Faculty', href: '/dashboard/faculty', icon: Users, index: 4 },
@@ -140,7 +134,7 @@ const getNavigationGroups = () => [
   {
     title: 'Engage',
     items: [
-      { name: 'Campus News', href: '/dashboard/campusNews', icon: Bell, index: 5 },
+      { name: 'Campus News', href: '/dashboard/campusNews', icon: Bell, index: 5, badge: 2 },
       { name: 'Events', href: '/dashboard/event', icon: Event, index: 6 },
       { name: 'Polls', href: '/dashboard/polls', icon: ChartBar, index: 7 },
       { name: 'Campus Groups', href: '/dashboard/community', icon: UsersGroup, index: 8 },
@@ -150,7 +144,7 @@ const getNavigationGroups = () => [
   {
     title: 'Service Desk',
     items: [
-      { name: 'Tickets', href: '/dashboard/Tickets', icon: Flag, index: 10 },
+      { name: 'Tickets', href: '/dashboard/Tickets', icon: Flag, index: 10, badge: 1 },
       { name: 'FAQ\'S', href: '/dashboard/faq', icon: Help, index: 11 }
     ]
   },
@@ -204,6 +198,32 @@ class LayoutErrorBoundary extends React.Component {
   }
 }
 
+// Notification Badge Component
+const NotificationBadge = ({ count }) => (
+  <div className="relative">
+    <div className="w-4 h-4 bg-[#6948C5] rounded-full flex items-center justify-center">
+      <span className="text-[9px] font-medium text-white leading-none">
+        {count}
+      </span>
+    </div>
+  </div>
+)
+
+// Checkbox Icon for Menu Items
+const CheckboxIcon = ({ isActive }) => (
+  <div className={`w-4 h-4 rounded border flex items-center justify-center ${
+    isActive 
+      ? 'bg-[#4AA081] border-[#4AA081]' 
+      : 'border-[rgba(110,119,129,0.4)] bg-transparent'
+  }`}>
+    {isActive && (
+      <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+      </svg>
+    )}
+  </div>
+)
+
 // Mobile sidebar component
 const MobileSidebar = React.memo(({ 
   isOpen, 
@@ -227,7 +247,7 @@ const MobileSidebar = React.memo(({
       />
       
       {/* Sidebar */}
-      <div className="relative flex-1 flex flex-col max-w-xs w-full bg-gradient-to-b from-gray-800 to-gray-900 shadow-xl transform transition ease-in-out duration-300 translate-x-0">
+      <div className="relative flex-1 flex flex-col max-w-xs w-full bg-[#293043] shadow-xl transform transition ease-in-out duration-300 translate-x-0">
         <div className="absolute top-0 right-0 -mr-12 pt-2">
           <button
             type="button"
@@ -240,27 +260,14 @@ const MobileSidebar = React.memo(({
         </div>
 
         <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center px-4 mb-8">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <AcademicCap className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-white">Campus Portal</h1>
-                <p className="text-xs text-gray-400">Management System</p>
-              </div>
-            </div>
-          </div>
-
           {/* Navigation */}
-          <nav className="px-4 space-y-8">
+          <nav className="px-8 space-y-6 mt-8">
             {navigationGroups.map((group) => (
               <div key={group.title}>
-                <div className="text-xs font-medium text-gray-400 uppercase tracking-wider px-3 mb-3">
+                <div className="text-[11px] font-medium text-[rgba(255,255,255,0.9)] uppercase tracking-wider mb-4 font-['Poppins']">
                   {group.title}
                 </div>
-                <ul className="space-y-2">
+                <ul className="space-y-1">
                   {group.items.map((item) => {
                     const isActive = currentPath === item.href
                     return (
@@ -272,20 +279,18 @@ const MobileSidebar = React.memo(({
                             onClose()
                           }}
                           className={classNames(
-                            'flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 border-l-4',
+                            'group flex items-center px-3 py-2 text-sm rounded-[2px] transition-all duration-200 border border-[rgba(110,119,129,0.4)]',
                             isActive
-                              ? 'bg-blue-600 text-white border-blue-400 shadow-lg'
-                              : 'text-gray-300 hover:bg-gray-700 hover:text-white border-transparent hover:border-gray-600'
+                              ? 'bg-[#4AA081] text-white'
+                              : 'bg-[rgba(31,57,119,0.02)] text-[rgba(255,255,255,0.6)] hover:bg-[rgba(31,57,119,0.1)]'
                           )}
+                          style={{ fontFamily: 'Inter' }}
                         >
-                          <item.icon className={classNames(
-                            'mr-3 h-5 w-5 transition-colors',
-                            isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'
-                          )} />
-                          {item.name}
-                          {isActive && (
-                            <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse" />
-                          )}
+                          <CheckboxIcon isActive={isActive} />
+                          <span className="ml-3 text-[12px] font-medium flex-1">
+                            {item.name}
+                          </span>
+                          {item.badge && <NotificationBadge count={item.badge} />}
                         </Link>
                       </li>
                     )
@@ -296,27 +301,10 @@ const MobileSidebar = React.memo(({
           </nav>
         </div>
 
-        {/* User section */}
-        <div className="flex-shrink-0 flex border-t border-gray-700 p-4">
-          <div className="flex items-center w-full">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                {userData?.full_name?.charAt(0) || userData?.name?.charAt(0) || 'U'}
-              </div>
-            </div>
-            <div className="ml-3 flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
-                {userData?.full_name || userData?.name || 'User'}
-              </p>
-              <p className="text-xs text-gray-400 truncate capitalize">{userData?.role || 'User'}</p>
-            </div>
-            <button
-              onClick={onLogout}
-              className="ml-3 flex-shrink-0 p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-gray-700"
-              title="Sign out"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
+        {/* Version and Footer */}
+        <div className="flex-shrink-0 border-t border-white border-opacity-20 mx-8 py-6">
+          <div className="text-[10px] text-[rgba(255,255,255,0.6)] font-['Inter']">
+            Unicircle April 23 Version.
           </div>
         </div>
       </div>
@@ -337,29 +325,18 @@ const DesktopSidebar = React.memo(({
 
   return (
     <div className="hidden lg:flex lg:flex-shrink-0">
-      <div className="flex flex-col w-64 bg-gradient-to-b from-gray-800 to-gray-900 shadow-xl">
+      <div className="flex flex-col w-80 bg-[#293043] h-full">
         <div className="flex-1 flex flex-col overflow-y-auto">
-          {/* Logo */}
-          <div className="flex items-center flex-shrink-0 px-6 py-8">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <AcademicCap className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-white">Campus Portal</h1>
-                <p className="text-xs text-gray-400">Management System</p>
-              </div>
-            </div>
-          </div>
-
+          {/* Logo Area - Removed as per design */}
+          
           {/* Navigation */}
-          <nav className="flex-1 px-6 py-4 space-y-8">
+          <nav className="px-8 py-8 space-y-8">
             {navigationGroups.map((group) => (
               <div key={group.title}>
-                <div className="text-xs font-medium text-gray-400 uppercase tracking-wider px-3 mb-3">
+                <div className="text-[11px] font-medium text-[rgba(255,255,255,0.9)] uppercase tracking-wider mb-4 font-['Poppins']">
                   {group.title}
                 </div>
-                <ul className="space-y-2">
+                <ul className="space-y-1">
                   {group.items.map((item) => {
                     const isActive = currentPath === item.href
                     return (
@@ -368,20 +345,18 @@ const DesktopSidebar = React.memo(({
                           to={item.href}
                           onClick={() => onItemClick(item.index)}
                           className={classNames(
-                            'group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 border-l-4',
+                            'group flex items-center px-3 py-2 rounded-[2px] transition-all duration-200 border border-[rgba(110,119,129,0.4)]',
                             isActive
-                              ? 'bg-blue-600 text-white border-blue-400 shadow-lg transform -translate-y-0.5'
-                              : 'text-gray-300 hover:bg-gray-700 hover:text-white border-transparent hover:border-gray-600 hover:shadow-md'
+                              ? 'bg-[#4AA081] text-white shadow-lg'
+                              : 'bg-[rgba(31,57,119,0.02)] text-[rgba(255,255,255,0.6)] hover:bg-[rgba(31,57,119,0.1)] hover:text-[rgba(255,255,255,0.8)]'
                           )}
+                          style={{ fontFamily: 'Inter' }}
                         >
-                          <item.icon className={classNames(
-                            'mr-3 h-5 w-5 transition-colors',
-                            isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'
-                          )} />
-                          {item.name}
-                          {isActive && (
-                            <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse" />
-                          )}
+                          <CheckboxIcon isActive={isActive} />
+                          <span className="ml-3 text-[12px] font-medium flex-1">
+                            {item.name}
+                          </span>
+                          {item.badge && <NotificationBadge count={item.badge} />}
                         </Link>
                       </li>
                     )
@@ -392,29 +367,12 @@ const DesktopSidebar = React.memo(({
           </nav>
         </div>
 
-        {/* User section */}
-        {/* <div className="flex-shrink-0 border-t border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                {userData?.full_name?.charAt(0) || userData?.name?.charAt(0) || 'U'}
-              </div>
-            </div>
-            <div className="ml-3 flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
-                {userData?.full_name || userData?.name || 'User'}
-              </p>
-              <p className="text-xs text-gray-400 truncate capitalize">{userData?.role || 'User'}</p>
-            </div>
-            <button
-              onClick={onLogout}
-              className="ml-3 flex-shrink-0 p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-gray-700"
-              title="Sign out"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
+        {/* Version and Footer */}
+        <div className="flex-shrink-0 border-t border-white border-opacity-20 mx-8 py-6">
+          <div className="text-[10px] text-[rgba(255,255,255,0.6)] font-['Inter']">
+            Unicircle April 23 Version.
           </div>
-        </div> */}
+        </div>
       </div>
     </div>
   )
@@ -642,7 +600,6 @@ const DashboardLayout = ({ children, userRole: propUserRole, userData: propUserD
                   © {new Date().getFullYear()} Campus Portal. All rights reserved.
                 </div>
                 <div className="flex items-center space-x-6 text-sm text-gray-500">
-                  <span>Unicircle April 23 Version</span>
                   <div className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                     <span>System Online</span>
