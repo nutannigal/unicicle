@@ -11,20 +11,20 @@ const AppRoutes = () => {
     <AuthProvider>
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<Navigate to="/dashboard/homepage" replace />} />
         <Route path="/login" element={<Login />} />
-
+        
         {/* Protected dashboard routes */}
         <Route
           path="/dashboard/*"
           element={
             <ProtectedRoute>
-              <Dashboard/>
+              <Dashboard />
             </ProtectedRoute>
           }
         />
 
-        {/* Redirect old routes to new structure */}
+        {/* Redirects */}
+        <Route path="/" element={<Navigate to="/dashboard/homepage" replace />} />
         <Route 
           path="/student/dashboard/*" 
           element={<Navigate to="/dashboard/homepage" replace />} 

@@ -2,9 +2,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getUserData, classNames } from '../utils/helpers'
 
-// Icons - Define all icons first
+// Icons - Using the same icons as before
 const MenuIcon = ({ className = "w-6 h-6" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -122,42 +121,45 @@ const ChevronDown = ({ className = "w-6 h-6" }) => (
   </svg>
 )
 
-// Menu items structure matching your original design
+// Helper function for class names
+const classNames = (...classes) => {
+  return classes.filter(Boolean).join(' ')
+}
+
+// Menu items structure matching your design exactly
 const getNavigationGroups = () => [
   {
     title: 'Dashboard',
     items: [
-      { name: 'Home', href: '/homepage', icon: Home, index: 1 },
-      { name: 'Calender', href: '/calender', icon: Calendar, index: 2 },
-      { name: 'Students', href: '/student', icon: Users, index: 3 },
-      { name: 'Facultity', href: '/facultity', icon: Users, index: 4},
+      { name: 'Home', href: '/dashboard/homepage', icon: Home, index: 1 },
+      { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar, index: 2 },
+      { name: 'Students', href: '/dashboard/student', icon: Users, index: 3 },
+      { name: 'Faculty', href: '/dashboard/faculty', icon: Users, index: 4 },
     ]
   },
   {
     title: 'Engage',
     items: [
-      { name: 'Campus News', href: '/campusNews', icon: Bell, index: 5},
-      { name: 'Events', href: '/event', icon: Event, index: 6},
-      { name: 'Polls', href: '/polls', icon: ChartBar, index: 7 },
-      { name: 'Campus Groups', href: '/community', icon: UsersGroup, index: 8 },
-      { name: 'Jobs', href: '/jobDetails', icon: Briefcase, index: 9 }
+      { name: 'Campus News', href: '/dashboard/campusNews', icon: Bell, index: 5 },
+      { name: 'Events', href: '/dashboard/event', icon: Event, index: 6 },
+      { name: 'Polls', href: '/dashboard/polls', icon: ChartBar, index: 7 },
+      { name: 'Campus Groups', href: '/dashboard/community', icon: UsersGroup, index: 8 },
+      { name: 'Jobs', href: '/dashboard/jobDetails', icon: Briefcase, index: 9 }
     ]
   },
   {
     title: 'Service Desk',
     items: [
-       { name: 'Tickets', href: '/Tickets', icon: Flag, index: 10 },
-      { name: 'FAQ\'S', href: '/faq', icon: Help, index: 11 }
-     
+      { name: 'Tickets', href: '/dashboard/Tickets', icon: Flag, index: 10 },
+      { name: 'FAQ\'S', href: '/dashboard/faq', icon: Help, index: 11 }
     ]
   },
   {
     title: 'Marketplace',
     items: [
-      { name: 'Campus Shop', href: '/marketplaceDetails', icon: ShoppingBag, index: 11 }
+      { name: 'Campus Shop', href: '/dashboard/marketplaceDetails', icon: ShoppingBag, index: 12 }
     ]
   },
-  
 ]
 
 // Error Boundary for Layout
@@ -202,7 +204,7 @@ class LayoutErrorBoundary extends React.Component {
   }
 }
 
-// Mobile sidebar component with your design
+// Mobile sidebar component
 const MobileSidebar = React.memo(({ 
   isOpen, 
   onClose, 
@@ -225,7 +227,7 @@ const MobileSidebar = React.memo(({
       />
       
       {/* Sidebar */}
-      <div className="relative flex-1 flex flex-col max-w-xs w-full bg-gray-800 shadow-xl transform transition ease-in-out duration-300 translate-x-0">
+      <div className="relative flex-1 flex flex-col max-w-xs w-full bg-gradient-to-b from-gray-800 to-gray-900 shadow-xl transform transition ease-in-out duration-300 translate-x-0">
         <div className="absolute top-0 right-0 -mr-12 pt-2">
           <button
             type="button"
@@ -237,9 +239,9 @@ const MobileSidebar = React.memo(({
           </button>
         </div>
 
-        <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto" style={{ fontFamily: 'Poppins' }}>
+        <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
           {/* Logo */}
-          <div className="flex-shrink-0 flex items-center px-4 mb-6">
+          <div className="flex-shrink-0 flex items-center px-4 mb-8">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <AcademicCap className="w-6 h-6 text-white" />
@@ -252,15 +254,15 @@ const MobileSidebar = React.memo(({
           </div>
 
           {/* Navigation */}
-          <nav className="px-4 space-y-6">
+          <nav className="px-4 space-y-8">
             {navigationGroups.map((group) => (
               <div key={group.title}>
-                <div className="text-xs font-medium text-gray-400 uppercase tracking-wider px-3 mb-2">
+                <div className="text-xs font-medium text-gray-400 uppercase tracking-wider px-3 mb-3">
                   {group.title}
                 </div>
-                <ul className="space-y-1">
+                <ul className="space-y-2">
                   {group.items.map((item) => {
-                    const isActive = parseInt(localStorage.getItem('active_index')) === item.index
+                    const isActive = currentPath === item.href
                     return (
                       <li key={item.name}>
                         <Link
@@ -270,83 +272,15 @@ const MobileSidebar = React.memo(({
                             onClose()
                           }}
                           className={classNames(
-                            'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200',
+                            'flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 border-l-4',
                             isActive
-                              ? 'bg-blue-600 text-white'
-                              : 'text-blue-100 hover:bg-blue-700 hover:text-white'
-                          )}
-                        >
-                          <item.icon className="mr-3 h-5 w-5" />
-                          {item.name}
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            ))}
-          </nav>
-        </div>
-
-       
-      </div>
-    </div>
-  )
-})
-
-MobileSidebar.displayName = 'MobileSidebar'
-
-// Desktop sidebar component with your design
-const DesktopSidebar = React.memo(({ 
-  userData, 
-  currentPath, 
-  onLogout,
-  onItemClick 
-}) => {
-  const navigationGroups = getNavigationGroups()
-
-  return (
-    <div className="hidden lg:flex lg:flex-shrink-0">
-      <div className="flex flex-col w-64 bg-gray-800" style={{ fontFamily: 'Poppins' }}>
-        <div className="flex-1 flex flex-col overflow-y-auto">
-          {/* Logo */}
-          {/* <div className="flex items-center flex-shrink-0 px-4 py-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <AcademicCap className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-white">Campus Portal</h1>
-                <p className="text-xs text-gray-400">Management System</p>
-              </div>
-            </div>
-          </div> */}
-
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-4 space-y-6">
-            {navigationGroups.map((group) => (
-              <div key={group.title}>
-                <div className="text-xs font-medium text-gray-400 uppercase tracking-wider px-3 mb-2">
-                  {group.title}
-                </div>
-                <ul className="space-y-1">
-                  {group.items.map((item) => {
-                    const isActive = parseInt(localStorage.getItem('active_index')) === item.index
-                    return (
-                      <li key={item.name}>
-                        <Link
-                          to={item.href}
-                          onClick={() => onItemClick(item.index)}
-                          className={classNames(
-                            'group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200',
-                            isActive
-                              ? 'bg-blue-600 text-white shadow-lg'
-                              : 'text-blue-100 hover:bg-blue-700 hover:text-white hover:shadow-md'
+                              ? 'bg-blue-600 text-white border-blue-400 shadow-lg'
+                              : 'text-gray-300 hover:bg-gray-700 hover:text-white border-transparent hover:border-gray-600'
                           )}
                         >
                           <item.icon className={classNames(
                             'mr-3 h-5 w-5 transition-colors',
-                            isActive ? 'text-white' : 'text-blue-300 group-hover:text-white'
+                            isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'
                           )} />
                           {item.name}
                           {isActive && (
@@ -363,7 +297,124 @@ const DesktopSidebar = React.memo(({
         </div>
 
         {/* User section */}
-        
+        <div className="flex-shrink-0 flex border-t border-gray-700 p-4">
+          <div className="flex items-center w-full">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                {userData?.full_name?.charAt(0) || userData?.name?.charAt(0) || 'U'}
+              </div>
+            </div>
+            <div className="ml-3 flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">
+                {userData?.full_name || userData?.name || 'User'}
+              </p>
+              <p className="text-xs text-gray-400 truncate capitalize">{userData?.role || 'User'}</p>
+            </div>
+            <button
+              onClick={onLogout}
+              className="ml-3 flex-shrink-0 p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-gray-700"
+              title="Sign out"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+})
+
+MobileSidebar.displayName = 'MobileSidebar'
+
+// Desktop sidebar component
+const DesktopSidebar = React.memo(({ 
+  userData, 
+  currentPath, 
+  onLogout,
+  onItemClick 
+}) => {
+  const navigationGroups = getNavigationGroups()
+
+  return (
+    <div className="hidden lg:flex lg:flex-shrink-0">
+      <div className="flex flex-col w-64 bg-gradient-to-b from-gray-800 to-gray-900 shadow-xl">
+        <div className="flex-1 flex flex-col overflow-y-auto">
+          {/* Logo */}
+          <div className="flex items-center flex-shrink-0 px-6 py-8">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <AcademicCap className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-white">Campus Portal</h1>
+                <p className="text-xs text-gray-400">Management System</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-6 py-4 space-y-8">
+            {navigationGroups.map((group) => (
+              <div key={group.title}>
+                <div className="text-xs font-medium text-gray-400 uppercase tracking-wider px-3 mb-3">
+                  {group.title}
+                </div>
+                <ul className="space-y-2">
+                  {group.items.map((item) => {
+                    const isActive = currentPath === item.href
+                    return (
+                      <li key={item.name}>
+                        <Link
+                          to={item.href}
+                          onClick={() => onItemClick(item.index)}
+                          className={classNames(
+                            'group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 border-l-4',
+                            isActive
+                              ? 'bg-blue-600 text-white border-blue-400 shadow-lg transform -translate-y-0.5'
+                              : 'text-gray-300 hover:bg-gray-700 hover:text-white border-transparent hover:border-gray-600 hover:shadow-md'
+                          )}
+                        >
+                          <item.icon className={classNames(
+                            'mr-3 h-5 w-5 transition-colors',
+                            isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'
+                          )} />
+                          {item.name}
+                          {isActive && (
+                            <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse" />
+                          )}
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        </div>
+
+        {/* User section */}
+        {/* <div className="flex-shrink-0 border-t border-gray-700 p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                {userData?.full_name?.charAt(0) || userData?.name?.charAt(0) || 'U'}
+              </div>
+            </div>
+            <div className="ml-3 flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">
+                {userData?.full_name || userData?.name || 'User'}
+              </p>
+              <p className="text-xs text-gray-400 truncate capitalize">{userData?.role || 'User'}</p>
+            </div>
+            <button
+              onClick={onLogout}
+              className="ml-3 flex-shrink-0 p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-gray-700"
+              title="Sign out"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
+        </div> */}
       </div>
     </div>
   )
@@ -388,7 +439,7 @@ const Header = React.memo(({ onMenuClick, userData, onLogout }) => {
   }, [showUserDropdown])
 
   return (
-    <div className="relative z-10 flex-shrink-0 flex h-16 bg-white border-b border-gray-200 lg:border-none">
+    <div className="relative z-10 flex-shrink-0 flex h-16 bg-white border-b border-gray-200 lg:border-none shadow-sm">
       {/* Mobile menu button */}
       <button
         type="button"
@@ -401,20 +452,12 @@ const Header = React.memo(({ onMenuClick, userData, onLogout }) => {
 
       <div className="flex-1 px-4 flex justify-between sm:px-6 lg:px-8">
         <div className="flex-1 flex items-center">
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins' }}>
+          <h1 className="text-2xl font-bold text-gray-900">
             Campus Dashboard
           </h1>
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Search button */}
-          <button 
-            className="p-2 text-gray-400 hover:text-gray-500 transition-colors rounded-lg hover:bg-gray-100"
-            aria-label="Search"
-          >
-            <Search className="w-5 h-5" />
-          </button>
-
           {/* User dropdown */}
           <div className="relative user-dropdown-container">
             <button
@@ -452,7 +495,7 @@ const Header = React.memo(({ onMenuClick, userData, onLogout }) => {
                   </div>
                   
                   <Link
-                    to="/homepage"
+                    to="/dashboard/homepage"
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     onClick={() => setShowUserDropdown(false)}
                     role="menuitem"
@@ -462,7 +505,7 @@ const Header = React.memo(({ onMenuClick, userData, onLogout }) => {
                   </Link>
                   
                   <Link
-                    to="/settings"
+                    to="/dashboard/settings"
                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     onClick={() => setShowUserDropdown(false)}
                     role="menuitem"
@@ -495,6 +538,23 @@ const Header = React.memo(({ onMenuClick, userData, onLogout }) => {
 })
 
 Header.displayName = 'Header'
+
+// Helper function to get user data
+const getUserData = (authUser) => {
+  if (!authUser) return null
+  
+  return {
+    id: authUser.id,
+    email: authUser.email,
+    full_name: authUser.name || authUser.full_name,
+    role: authUser.role,
+    university_name: authUser.university_name,
+    campus_name: authUser.campus_name,
+    mobile: authUser.mobile,
+    campus_id: authUser.campus_id,
+    profile: authUser.profile
+  }
+}
 
 // Main DashboardLayout component
 const DashboardLayout = ({ children, userRole: propUserRole, userData: propUserData }) => {
@@ -578,16 +638,11 @@ const DashboardLayout = ({ children, userRole: propUserRole, userData: propUserD
           <footer className="bg-white border-t border-gray-200 py-4">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-                <div className="text-sm text-gray-600" style={{ fontFamily: 'Poppins' }}>
+                <div className="text-sm text-gray-600">
                   © {new Date().getFullYear()} Campus Portal. All rights reserved.
                 </div>
                 <div className="flex items-center space-x-6 text-sm text-gray-500">
-                  <Link to="/privacy" className="hover:text-gray-700 transition-colors">
-                    Privacy Policy
-                  </Link>
-                  <Link to="/terms" className="hover:text-gray-700 transition-colors">
-                    Terms of Service
-                  </Link>
+                  <span>Unicircle April 23 Version</span>
                   <div className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                     <span>System Online</span>
