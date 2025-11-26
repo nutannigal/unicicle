@@ -1,7 +1,7 @@
 // src/pages/dashboard/Dashboard.jsx
 import React, { useState, useEffect, useMemo } from 'react'
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
-import DashboardLayout from '../../layouts/DashboardLayout'
+import DashboardLayout from './../../layouts/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
 
 // Import components directly
@@ -9,6 +9,18 @@ import Homepage from '../../components/dashboard/Homepage'
 import Calendar from '../../components/dashboard/Calender'
 import Students from '../../components/dashboard/Students'
 import Faculty from '../../components/dashboard/Faculty'
+
+{/* Engage */}
+import CampusNews from '../../components/engage/CampusNews'
+import Event from '../../components/engage/Events'
+import Polls from '../../components/engage/Polls'
+import CampusGroups from '../../components/engage/CampusGroups'
+import Jobs from '../../components/engage/Jobs'
+{/* Service Desk */}
+import Tickets from '../../components/servicedesk/Tickets'
+import FAQs from '../../components/servicedesk/FAQs'
+{/* Marketplace */}
+import Class from '../../components/marketplace/Class'
 
 // Loading Component
 const LoadingSpinner = () => (
@@ -134,7 +146,26 @@ const Dashboard = () => {
           <Route path="calendar" element={<Calendar />} />
           <Route path="students" element={<Students />} />
           <Route path="faculty" element={<Faculty />} />
-          
+
+
+{/* Engage */}
+          <Route path='campusnews' element={<CampusNews/>}/>
+          <Route path='event' element={<Event/>}/>
+          <Route path='polls' element={<Polls/>}/>
+          <Route path='campusgroups' element={<CampusGroups/>}/>
+          <Route path='job' element={<Jobs/>}/>
+
+
+  {/* Service DESK */}
+        <Route path='tickets' element={<Tickets/>}/>
+        <Route path='faqs' element={<FAQs/>}/>
+
+    {/* MARkETPLACE */}
+                <Route path='class' element={<Class/>}/>
+
+
+
+
           {/* Default redirect */}
           <Route path="" element={<Homepage stats={stats} userData={userData} />} />
           <Route path="*" element={<Homepage stats={stats} userData={userData} />} />

@@ -149,9 +149,10 @@ const getNavigationGroups = () => [
     ]
   },
   {
-    title: 'Marketplace',
+    title: 'Others',
     items: [
-      { name: 'Campus Shop', href: '/dashboard/marketplaceDetails', icon: ShoppingBag, index: 12 }
+      
+      { name: 'Class/Grand', href: '/dashboard/classGrand', icon: AcademicCap, index: 12 }
     ]
   },
 ]
@@ -380,21 +381,68 @@ const DesktopSidebar = React.memo(({
 
 DesktopSidebar.displayName = 'DesktopSidebar'
 
-// Header component
+// Header component with notifications
 const Header = React.memo(({ onMenuClick, userData, onLogout }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
   const navigate = useNavigate()
+
+  // Mock notification data
+  const notifications = [
+    {
+      id: 1,
+      title: 'New event invitation',
+      message: 'You have been invited to Alumni Meet & Greet',
+      time: '5 min ago',
+      unread: true,
+      type: 'event'
+    },
+    {
+      id: 2,
+      title: 'Campus News Update',
+      message: 'New campus circular has been published',
+      time: '1 hour ago',
+      unread: true,
+      type: 'news'
+    },
+    {
+      id: 3,
+      title: 'Poll Results',
+      message: 'The campus facility poll results are out',
+      time: '2 hours ago',
+      unread: false,
+      type: 'poll'
+    },
+    {
+      id: 4,
+      title: 'Class Schedule Change',
+      message: 'Your CS-101 class has been rescheduled to 2 PM',
+      time: '3 hours ago',
+      unread: false,
+      type: 'schedule'
+    }
+  ]
+
+  const unreadCount = notifications.filter(n => n.unread).length
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showUserDropdown && !event.target.closest('.user-dropdown-container')) {
         setShowUserDropdown(false)
       }
+      if (showNotifications && !event.target.closest('.notifications-container')) {
+        setShowNotifications(false)
+      }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showUserDropdown])
+  }, [showUserDropdown, showNotifications])
+
+  const handleMarkAllAsRead = () => {
+    // In a real app, you would update the notifications state or make an API call
+    setShowNotifications(false)
+  }
 
   return (
     <div className="relative z-10 flex-shrink-0 flex h-16 bg-white border-b border-gray-200 lg:border-none shadow-sm">
@@ -416,6 +464,90 @@ const Header = React.memo(({ onMenuClick, userData, onLogout }) => {
         </div>
 
         <div className="flex items-center space-x-4">
+          {/* Notifications */}
+          <div className="relative notifications-container">
+            <button
+              className="relative p-2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg transition-colors"
+              onClick={() => setShowNotifications(!showNotifications)}
+              aria-label="Notifications"
+            >
+              <Bell className="h-6 w-6" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium border-2 border-white">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notifications Dropdown */}
+            {showNotifications && (
+              <div className="origin-top-right absolute right-0 mt-2 w-80 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-scale-in">
+                <div className="p-4 border-b border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-medium">
+                        {unreadCount} new
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.length > 0 ? (
+                    <div className="py-2">
+                      {notifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={`px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer border-l-2 ${
+                            notification.unread 
+                              ? 'border-blue-500 bg-blue-50' 
+                              : 'border-transparent'
+                          }`}
+                          onClick={() => {
+                            setShowNotifications(false)
+                            // Handle notification click - navigate to relevant page
+                          }}
+                        >
+                          <div className="flex items-start space-x-3">
+                            <div className={`flex-shrink-0 w-2 h-2 mt-2 rounded-full ${
+                              notification.unread ? 'bg-blue-500' : 'bg-gray-300'
+                            }`} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900">
+                                {notification.title}
+                              </p>
+                              <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                                {notification.message}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                {notification.time}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center">
+                      <Bell className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+                      <p className="text-gray-500 text-sm">No notifications</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-3 border-t border-gray-100 bg-gray-50">
+                  <button
+                    onClick={handleMarkAllAsRead}
+                    className="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium py-2 transition-colors"
+                  >
+                    Mark all as read
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* User dropdown */}
           <div className="relative user-dropdown-container">
             <button
